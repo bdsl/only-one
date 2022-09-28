@@ -5,10 +5,9 @@ require __DIR__.'/vendor/autoload.php';
 use Bdsl\OnlyOne\Start;
 use Symfony\Component\Console\Application;
 
-$application = new Application('echo', '1.0.0');
+$application = new Application('Only one');
 $command = new Start();
 
 $application->add($command);
 
-$application->setDefaultCommand($command->getName(), true);
 $application->run();
