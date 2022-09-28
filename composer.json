@@ -21,7 +21,8 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
-        "vimeo/psalm": "^4.27"
+        "vimeo/psalm": "^4.27",
+        "phpstan/phpstan": "^1.8"
     },
     "license": "proprietary"
 }
