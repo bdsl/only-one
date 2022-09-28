@@ -3,11 +3,11 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Bdsl\OnlyOne\Start;
+use Bdsl\OnlyOne\Release;
 use Symfony\Component\Console\Application;
 
 $application = new Application('Only one');
-$command = new Start();
-
-$application->add($command);
+$application->add(new Start());
+$application->add(new Release());
 
 $application->run();

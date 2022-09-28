@@ -86,6 +86,9 @@ class LockingQueue implements \JsonSerializable
 
         if ($this->tail?->equals($entry)) {
             $this->tail = null;
+            return;
         }
+
+        throw new \Exception("{$entry->id} is not in queue");
     }
 }
