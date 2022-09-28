@@ -60,7 +60,10 @@ class Start extends Command
         try {
             $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
         } catch (GitException $e) {
-            $output->writeln($e->getRunnerResult()->getOutputAsString());
+            $runnerResult = $e->getRunnerResult();
+            if ($runnerResult !== null) {
+                $output->writeln($runnerResult->getOutputAsString());
+            }
             throw $e;
         }
         $repo->push();
