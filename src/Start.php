@@ -8,6 +8,7 @@ use CuyZ\Valinor\Mapper\Source\JsonSource;
 use CuyZ\Valinor\MapperBuilder;
 use CzProject\GitPhp\Git;
 use CzProject\GitPhp\GitException;
+use CzProject\GitPhp\GitRepository;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,6 +20,34 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'start')]
 class Start extends Command
 {
+    /**
+     * @param GitRepository $repo
+     * @param string $resourceName
+     * @return string
+     */
+    public function getQueueFileName(GitRepository $repo, string $resourceName): string
+    {
+        $path = $repo->getRepositoryPath();
+        $queueFile = $path . "/$resourceName.json";
+        return $queueFile;
+    }
+
+    /**
+     * @param string $queueFile
+     * @param \CuyZ\Valinor\Mapper\TreeMapper $mapper
+     * @return LockingQueue
+     */
+    public function getQueue(string $queueFile, \CuyZ\Valinor\Mapper\TreeMapper $mapper): LockingQueue
+    {
+        $queueFileContent = @\file_get_contents($queueFile);
+        if ($queueFileContent === false) {
+            $queue = LockingQueue::empty();
+        } else {
+            $queue = $mapper->map(LockingQueue::class, new JsonSource($queueFileContent));
+        }
+        return $queue;
+    }
+
     protected function configure(): void
     {
         $this->setDefinition(new InputDefinition([
@@ -46,21 +75,14 @@ class Start extends Command
 
         $repo = $git->open($path); // will use later
 
-        $path = $repo->getRepositoryPath();
-        $queueFile = $path . "/$resourceName.json";
-
-        $queueFileContent = @\file_get_contents($queueFile);
-        if ($queueFileContent === false) {
-            $queue = LockingQueue::empty();
-        } else {
-            $queue = $mapper->map(LockingQueue::class, new JsonSource($queueFileContent));
-        }
+        $queueFile = $this->getQueueFileName($repo, $resourceName);
+        $queue = $this->getQueue($queueFile, $mapper);
 
         $queueEntry = new QueueEntry(dechex(\random_int(1, 1_000_000_000)));
         $queue->enqueue($queueEntry);
         file_put_contents($queueFile, \json_encode($queue, \JSON_PRETTY_PRINT));
 
-        $output->writeln("Cloned {$repositoryUrl} to $path");
+        $output->writeln("Cloned {$repositoryUrl} to {$repo->getRepositoryPath()}");
         $repo->addAllChanges();
         try {
             $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
@@ -80,8 +102,39 @@ class Start extends Command
         } else if ($queue->tail()?->equals($queueEntry)) {
             /** @psalm-suppress NullPropertyFetch (not sure why Psalm thinks queueHead is null here */
             $output->writeln("Lock on `$resourceName`, is currently held by lock id {$queueHead->id}, added {$queueEntry->id} to queue");
+            $this->pollWaitingForHeadOfQueue($output, $queueEntry, $repo, $mapper, $resourceName);
         }
 
         return 0;
+    }
+
+    /** Poll the git server until our queue entry is at the head, or throw on timeout **/
+    private function pollWaitingForHeadOfQueue(OutputInterface $output, QueueEntry $queueEntry, GitRepository $repo, $mapper, $resourceName): void
+    {
+        $maxTimeSeconds = 300;
+
+        $startTimeStamp = microtime(true);
+
+        $timeoutTimeStamp = $startTimeStamp + $maxTimeSeconds;
+
+        while (microtime(true) < $timeoutTimeStamp) {
+            $output->writeln("Waiting for lock to be released...");
+            sleep(5);
+            $repo->pull();
+
+            $queueFile = $this->getQueueFileName($repo, $resourceName);
+            $queue = $this->getQueue($queueFile, $mapper);
+
+            if ($queue->head()?->equals($queueEntry)) {
+                $output->writeln("Lock on $resourceName aquired");
+                return;
+            };
+
+            if (! $queue->tail()?->equals($queueEntry)) {
+                throw new \Exception("We were kicked out of queue for $resourceName");
+            };
+        }
+
+        throw new \Exception("Timed out waiting for lock on $resourceName");
     }
 }
