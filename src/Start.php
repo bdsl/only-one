@@ -2,6 +2,8 @@
 
 namespace Bdsl\OnlyOne;
 
+use Bdsl\OnlyOne\Domain\LockingQueue;
+use Bdsl\OnlyOne\Domain\QueueEntry;
 use CzProject\GitPhp\Git;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -35,9 +37,27 @@ class Start extends Command
         $path = $temporaryDirectory->path('only-one');
         $git->cloneRepository($repositoryUrl, $path);
 
-        $_repo = $git->open($path); // will use later
+        $repo = $git->open($path); // will use later
+
+        $path = $repo->getRepositoryPath();
+        $queueFile = $path . "/$resourceName.json";
+
+        $queueFileContent = @\file_get_contents($queueFile);
+        if ($queueFileContent === false) {
+            $queue = LockingQueue::empty();
+        } else {
+            // todo read queue from file
+            throw new \Exception('not implemented');
+        }
+
+        $queueEntry = new QueueEntry(dechex(\random_int(1, 1_000_000_000)));
+        $queue->enqueue($queueEntry);
+        file_put_contents($queueFile, \json_encode($queue, \JSON_PRETTY_PRINT));
 
         $output->writeln("Cloned {$repositoryUrl} to $path");
+        $repo->addAllChanges();
+        $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
+        $repo->push();
 
         return 0;
     }

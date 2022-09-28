@@ -2,7 +2,7 @@
 
 namespace Bdsl\OnlyOne\Domain;
 
-class LockingQueue
+class LockingQueue implements \JsonSerializable
 {
     private ?QueueEntry $head = null;
     private ?QueueEntry $tail = null;
@@ -10,6 +10,14 @@ class LockingQueue
     private function __construct()
     {
 
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+                'head' => $this->head,
+                'tail' => $this->tail,
+        ];
     }
 
     public static function empty(): self
