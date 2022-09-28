@@ -62,6 +62,7 @@ class Start extends Command
         } catch (GitException $e) {
             $runnerResult = $e->getRunnerResult();
             if ($runnerResult !== null) {
+                $output->writeln("Exception :");
                 $output->writeln($runnerResult->getOutputAsString());
             }
             throw $e;
