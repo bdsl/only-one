@@ -2,6 +2,8 @@
 
 namespace Bdsl\OnlyOne;
 
+use CzProject\GitPhp\Git;
+use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,7 +27,15 @@ class Start extends Command
         $resourceName = $input->getArgument('resource');
         $repositoryUrl = $input->getArgument("repository");
 
-        $output->writeln("So you want a lock for $resourceName at $repositoryUrl?");
+        $git = new Git();
+        $temporaryDirectory = (new TemporaryDirectory())->create();
+
+        $path = $temporaryDirectory->path('only-one');
+        $git->cloneRepository($repositoryUrl, $path);
+
+        $repo = $git->open($path);
+
+        $output->writeln("Cloned {$repositoryUrl} to $path");
 
         return 0;
     }
