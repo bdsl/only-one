@@ -94,7 +94,7 @@ class Start extends Command
             }
             throw $e;
         }
-        $repo->push();
+        $repo->push(); // todo handle non-fast foward merge error by resetting local repo to remote and starting again.
 
         $queueHead = $queue->head();
         if ($queueHead?->equals($queueEntry)) {
