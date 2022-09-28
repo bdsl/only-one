@@ -12,6 +12,9 @@ class LockingQueue implements \JsonSerializable
 
     }
 
+    /**
+     * @return array<string, ?QueueEntry>
+     */
     public function jsonSerialize(): array
     {
         return [
@@ -35,7 +38,8 @@ class LockingQueue implements \JsonSerializable
             throw new \Exception("{$queueEntry->id} is already queued of the queue");
         }
 
-        if ($this->head === null) {
+        /** @psalm-suppress RedundantCondition - I'm not sure why Psalm thinks that $this->head is always null. It isn't */
+        if (is_null($this->head)) {
             $this->head = $queueEntry;
         } else {
             $this->tail = $queueEntry;
