@@ -5,6 +5,7 @@ namespace Bdsl\OnlyOne;
 use Bdsl\OnlyOne\Domain\LockingQueue;
 use Bdsl\OnlyOne\Domain\QueueEntry;
 use CzProject\GitPhp\Git;
+use CzProject\GitPhp\GitException;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -56,7 +57,12 @@ class Start extends Command
 
         $output->writeln("Cloned {$repositoryUrl} to $path");
         $repo->addAllChanges();
-        $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
+        try {
+            $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
+        } catch (GitException $e) {
+            $output->writeln($e->getRunnerResult()->getOutputAsString());
+            throw $e;
+        }
         $repo->push();
         $output->writeln("Acquired lock on `$resourceName`, lock id {$queueEntry->id}");
 
