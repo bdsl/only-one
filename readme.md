@@ -13,3 +13,28 @@ queue and the third one takes its place.
 Intended for uses such as running expensive or slow tests from build servers, or 
 deployments
 
+## Usage:
+
+(not yet implemented)
+
+To acquire a lock on resource:
+
+```shell
+only-one start <resource> <repository>
+```
+
+If foo is currently available this will return zero immediately. If not it will register itself as waiting,
+and wait for up to one hour polling for foo to become available. If there is a process already waiting it will kick
+them out. If kicked it will return non-zero.
+
+(Question - is there a need to return a unique random code?)
+
+```shell
+only-one release <resource> <repository>
+```
+
+Release the lock on `foo`. If there is a second process waiting to use `foo` then that will be started automatically.
+
+## Advanced features to implement later:
+
+- Forcefully kicking out currently held locks to deal with e.g. a crashed or misbehaving client.
