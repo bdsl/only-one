@@ -5,6 +5,7 @@ namespace Bdsl\OnlyOne\Domain;
 class LockingQueue
 {
     private ?QueueEntry $head = null;
+    private ?QueueEntry $tail = null;
 
     private function __construct()
     {
@@ -18,11 +19,51 @@ class LockingQueue
 
     public function enqueue(QueueEntry $queueEntry): void
     {
-        $this->head = $queueEntry;
+        if ($this->head?->equals($queueEntry)) {
+            throw new \Exception("{$queueEntry->id} is already at the head of the queue");
+        }
+
+        if ($this->tail?->equals($queueEntry)) {
+            throw new \Exception("{$queueEntry->id} is already queued of the queue");
+        }
+
+        if ($this->head === null) {
+            $this->head = $queueEntry;
+        } else {
+            $this->tail = $queueEntry;
+        }
     }
 
     public function isEmpty(): bool
     {
         return $this->head === null;
+    }
+
+    public function hasSecondItem(): bool
+    {
+        return $this->tail !== null;
+    }
+
+    public function head(): ?QueueEntry
+    {
+        return $this->head;
+    }
+
+    public function tail(): ?QueueEntry
+    {
+        return $this->tail;
+    }
+
+    public function release(QueueEntry $entry): void
+    {
+        if ($this->head?->equals($entry)) {
+            $this->head = $this->tail;
+            $this->tail = null;
+            return;
+        }
+
+        if ($this->tail?->equals($entry)) {
+            $this->tail = null;
+        }
     }
 }
