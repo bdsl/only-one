@@ -39,5 +39,5 @@ jobs:
     - name: Run static analysis
       run: vendor/bin/psalm && vendor/bin/phpstan analyse
 
-    - name: Run application, for now borrwing one of our vendor's repos to use as the DB
+    - name: Run application
       run: php only-one start foofoo git@github.com:bdsl/lock-storage.git
