@@ -58,6 +58,7 @@ class Start extends Command
         $repo->addAllChanges();
         $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
         $repo->push();
+        $output->writeln("Acquired lock on `$resourceName`, lock id {$queueEntry->id}");
 
         return 0;
     }
