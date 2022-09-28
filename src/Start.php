@@ -58,7 +58,7 @@ class Start extends Command
         $output->writeln("Cloned {$repositoryUrl} to $path");
         $repo->addAllChanges();
         try {
-            $repo->commit("Add {$queueEntry->id} to queue for $resourceName");
+            $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
         } catch (GitException $e) {
             $runnerResult = $e->getRunnerResult();
             if ($runnerResult !== null) {
