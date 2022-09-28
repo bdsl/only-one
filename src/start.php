@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'start')]
 class Start extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDefinition(new InputDefinition([
             new InputArgument("resource", InputArgument::REQUIRED, "The name of the resource on which to acquire a lock"),
@@ -25,7 +25,9 @@ class Start extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $resourceName = $input->getArgument('resource');
+        \assert(is_string($resourceName));
         $repositoryUrl = $input->getArgument("repository");
+        \assert(is_string($repositoryUrl));
 
         $git = new Git();
         $temporaryDirectory = (new TemporaryDirectory())->create();
@@ -33,7 +35,7 @@ class Start extends Command
         $path = $temporaryDirectory->path('only-one');
         $git->cloneRepository($repositoryUrl, $path);
 
-        $repo = $git->open($path);
+        $_repo = $git->open($path); // will use later
 
         $output->writeln("Cloned {$repositoryUrl} to $path");
 
