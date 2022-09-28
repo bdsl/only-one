@@ -5,6 +5,7 @@ namespace Bdsl\OnlyOne;
 use Bdsl\OnlyOne\Domain\LockingQueue;
 use Bdsl\OnlyOne\Domain\QueueEntry;
 use CuyZ\Valinor\Mapper\Source\JsonSource;
+use CuyZ\Valinor\Mapper\TreeMapper;
 use CuyZ\Valinor\MapperBuilder;
 use CzProject\GitPhp\Git;
 use CzProject\GitPhp\GitException;
@@ -108,8 +109,10 @@ class Start extends Command
         return 0;
     }
 
-    /** Poll the git server until our queue entry is at the head, or throw on timeout **/
-    private function pollWaitingForHeadOfQueue(OutputInterface $output, QueueEntry $queueEntry, GitRepository $repo, $mapper, $resourceName): void
+    /**
+     * Poll the git server until our queue entry is at the head, or throw on timeout or another queue entry taking our place at the tail*
+     */
+    private function pollWaitingForHeadOfQueue(OutputInterface $output, QueueEntry $queueEntry, GitRepository $repo, TreeMapper $mapper, string $resourceName): void
     {
         $maxTimeSeconds = 300;
 
