@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 #[AsCommand(name: 'start')]
 class Start extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setDefinition(new InputDefinition([
             new InputArgument("resource", InputArgument::REQUIRED, "The name of the resource on which to acquire a lock"),
