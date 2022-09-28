@@ -34,3 +34,6 @@ jobs:
 
     - name: Run static analysis
       run: vendor/bin/psalm
+
+    - name: Run application, for now borrwing one of our vendor's repos to use as the DB
+      run: php .\only-one start foo https://github.com/czproject/git-php
