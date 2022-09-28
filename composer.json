@@ -1,0 +1,17 @@
+{
+    "name": "bdsl/only-one",
+    "description": "Git based CLI cooperative lock tool",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Bdsl\\OnlyOne\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Barney Laurance",
+            "email": "barney@redmagic.org.uk"
+        }
+    ],
+    "require": {}
+}
