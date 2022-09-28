@@ -11,7 +11,11 @@ required before the first one is finished then the second will be kicked out of 
 queue and the third one takes its place.
 
 Intended for uses such as running expensive or slow tests from build servers, or 
-deployments
+deployments.
+
+This is inspired by the 
+[concurrency feature in GitHub Actions](https://github.blog/changelog/2021-04-19-github-actions-limit-workflow-run-or-job-concurrency/), 
+to allow use with other build/deploy systems.
 
 ## Usage:
 
