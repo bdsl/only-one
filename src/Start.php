@@ -4,6 +4,8 @@ namespace Bdsl\OnlyOne;
 
 use Bdsl\OnlyOne\Domain\LockingQueue;
 use Bdsl\OnlyOne\Domain\QueueEntry;
+use CuyZ\Valinor\Mapper\Source\JsonSource;
+use CuyZ\Valinor\MapperBuilder;
 use CzProject\GitPhp\Git;
 use CzProject\GitPhp\GitException;
 use Spatie\TemporaryDirectory\TemporaryDirectory;
@@ -32,6 +34,10 @@ class Start extends Command
         $repositoryUrl = $input->getArgument("repository");
         \assert(is_string($repositoryUrl));
 
+        $mapper = (new MapperBuilder())
+            ->registerConstructor(LockingQueue::fromHeadAndTail(...))
+            ->mapper();
+
         $git = new Git();
         $temporaryDirectory = (new TemporaryDirectory())->create();
 
@@ -47,8 +53,7 @@ class Start extends Command
         if ($queueFileContent === false) {
             $queue = LockingQueue::empty();
         } else {
-            // todo read queue from file
-            throw new \Exception('not implemented');
+            $queue = $mapper->map(LockingQueue::class, new JsonSource($queueFileContent));
         }
 
         $queueEntry = new QueueEntry(dechex(\random_int(1, 1_000_000_000)));
@@ -68,7 +73,13 @@ class Start extends Command
             throw $e;
         }
         $repo->push();
-        $output->writeln("Acquired lock on `$resourceName`, lock id {$queueEntry->id}");
+
+        $queueHead = $queue->head();
+        if ($queueHead?->equals($queueEntry)) {
+            $output->writeln("Acquired lock on `$resourceName`, lock id {$queueEntry->id}");
+        } else if ($queue->tail()?->equals($queueEntry)) {
+            $output->writeln("Lock on `$resourceName`, is currently held by lock id {$queueHead->id}, added {$queueEntry->id} to queue");
+        }
 
         return 0;
     }

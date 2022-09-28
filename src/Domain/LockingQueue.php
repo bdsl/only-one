@@ -7,9 +7,19 @@ class LockingQueue implements \JsonSerializable
     private ?QueueEntry $head = null;
     private ?QueueEntry $tail = null;
 
-    private function __construct()
+    private function __construct(?QueueEntry $head, ?QueueEntry $tail)
     {
+        $this->head = $head;
+        $this->tail = $tail;
+    }
 
+    public static function fromHeadAndTail(?QueueEntry $head, ?QueueEntry $tail): self
+    {
+        if ($tail && ! $head) {
+            throw new \Exception('Cannot have tail without head');
+        }
+
+        return new self($head, $tail);
     }
 
     /**
@@ -25,7 +35,7 @@ class LockingQueue implements \JsonSerializable
 
     public static function empty(): self
     {
-        return new self();
+        return new self(null, null);
     }
 
     public function enqueue(QueueEntry $queueEntry): void
