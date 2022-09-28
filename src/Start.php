@@ -78,6 +78,7 @@ class Start extends Command
         if ($queueHead?->equals($queueEntry)) {
             $output->writeln("Acquired lock on `$resourceName`, lock id {$queueEntry->id}");
         } else if ($queue->tail()?->equals($queueEntry)) {
+            /** @psalm-suppress NullPropertyFetch (not sure why Psalm thinks queueHead is null here */
             $output->writeln("Lock on `$resourceName`, is currently held by lock id {$queueHead->id}, added {$queueEntry->id} to queue");
         }
 
