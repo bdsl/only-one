@@ -19,7 +19,7 @@ to allow use with other build/deploy systems.
 
 ## Usage:
 
-(not yet implemented)
+(not yet fully implemented)
 
 To acquire a lock on resource:
 
