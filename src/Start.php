@@ -86,7 +86,7 @@ class Start extends Command
         $output->writeln("Cloned {$repositoryUrl} to {$repo->getRepositoryPath()}");
         $repo->addAllChanges();
         try {
-            $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`", ['--author' => "Only One <only@one>"]);
+            $repo->commit("Add {$queueEntry->id} to queue for `$resourceName`");
         } catch (GitException $e) {
             $runnerResult = $e->getRunnerResult();
             if ($runnerResult !== null) {

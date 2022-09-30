@@ -42,5 +42,8 @@ jobs:
     - name: Run tests
       run: vendor/bin/phpunit
 
+    - name: Configure git
+      run: git config --global user.name "Only One" && git config --global user.email "onlyone@onlyone"
+
     - name: Run application
       run: php only-one start foofoo git@github.com:bdsl/lock-storage.git
